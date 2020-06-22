@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  am-judicial-booking-batch-service:
+    build:
+      context: .
+    image: hmcts/am-judicial-booking-batch-service
+    container_name: am-judicial-booking-batch-service
+    ports:
+      - ${SERVER_PORT:-4081}:${SERVER_PORT:-4081}
+    environment:
+      - JUDICIAL_BOOKING_SERVICE_POSTGRES_HOST=am-judicial-booking-database
+        - JUDICIAL_BOOKING_SERVICE_POSTGRES_DATABASE=judicial_booking
+        - JUDICIAL_BOOKING_SERVICE_POSTGRES_PORT=5432
+        - JUDICIAL_BOOKING_SERVICE_POSTGRES_USER=am
+        - JUDICIAL_BOOKING_SERVICE_POSTGRES_PASS=am

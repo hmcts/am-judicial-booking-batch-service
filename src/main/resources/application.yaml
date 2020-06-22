@@ -1,0 +1,58 @@
+server:
+  port: ${PORT:4081}
+
+management:
+  health:
+    db:
+      enabled: true
+    defaults:
+      enabled: true
+    diskspace:
+      enabled: true
+  endpoint:
+    health:
+      enabled: true
+      cache:
+        time-to-live: 5s
+      show-details: "always"
+  security:
+    enabled: false
+  endpoints:
+    health:
+      sensitive: false
+    web:
+      base-path: /
+      exposure:
+        include: 'health'
+
+#If you use a database then uncomment below lines and update db properties accordingly
+
+spring:
+  application:
+    name: Judicial Booking Batch Service
+  jackson:
+    default-property-inclusion: NON_NULL
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    show-sql: true
+    log_statement: all
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+  liquibase:
+    enabled: ${ENABLE_DB_MIGRATE:true}
+    change-log: classpath:/db/changelog/db.changelog-master.xml
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://${JUDICIAL_BOOKING_SERVICE_POSTGRES_HOST:localhost}:${JUDICIAL_BOOKING_SERVICE_POSTGRES_PORT:5455}/${JUDICIAL_BOOKING_SERVICE_POSTGRES_DATABASE:judicial_booking}${JUDICIAL_BOOKING_SERVICE_DB_OPTIONS:}
+    username: ${JUDICIAL_BOOKING_SERVICE_POSTGRES_USER:am}
+    password: ${JUDICIAL_BOOKING_SERVICE_POSTGRES_PASS:am}
+    properties:
+      charSet: UTF-8
+
+
+get-expired-records: getExpiredRecords
+delete-expired-records: deleteExpiredRecords
+batchjob-name: deleteExpiredRecords

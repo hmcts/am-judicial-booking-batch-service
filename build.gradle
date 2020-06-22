@@ -29,7 +29,6 @@ apply plugin: 'io.spring.dependency-management'
 def versions = [
         junit              : '5.5.0',
         lombok             : '1.18.6',
-        reformHealthStarter: '0.0.5',
         reformLogging      : '5.1.1',
         reformS2sClient    : '3.0.0',
         serenity           : '2.1.0',

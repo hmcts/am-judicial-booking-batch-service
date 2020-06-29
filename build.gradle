@@ -9,7 +9,7 @@ buildscript {
 
 plugins {
     id 'application'
-    id 'checkstyle'
+    id 'uk.gov.hmcts.java' version '0.9.0'
     id 'pmd'
     id 'jacoco'
     id 'org.springframework.boot' version '2.3.1.RELEASE'
@@ -27,15 +27,15 @@ apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
 
 def versions = [
-        junit              : '5.5.0',
-        lombok             : '1.18.6',
-        reformLogging      : '5.1.1',
-        reformS2sClient    : '3.0.0',
-        serenity           : '2.1.0',
-        springBoot         : '2.1.4.RELEASE',
-        springHystrix      : '2.1.1.RELEASE',
-        rest_assured       : '3.3.0',
-        feign_jackson      : '9.7.0'
+        junit          : '5.5.0',
+        lombok         : '1.18.6',
+        reformLogging  : '5.1.1',
+        reformS2sClient: '3.0.0',
+        serenity       : '2.1.0',
+        springBoot     : '2.1.4.RELEASE',
+        springHystrix  : '2.1.1.RELEASE',
+        rest_assured   : '3.3.0',
+        feign_jackson  : '9.7.0'
 ]
 
 mainClassName = 'uk.gov.hmcts.reform.judicialbookingbatch.JudicialBookingBatchApplication'
@@ -137,16 +137,6 @@ task smoke(type: Test, description: 'Runs the smoke tests.', group: 'Verificatio
     finalizedBy aggregate
 }
 
-checkstyle {
-    maxWarnings = 0
-    toolVersion = '8.18'
-    // need to set configDir to rootDir otherwise submodule will use submodule/config/checkstyle
-    configDir = new File(rootDir, 'config/checkstyle')
-
-    checkstyleMain.shouldRunAfter(compileJava)
-    test.shouldRunAfter(checkstyleTest)
-}
-
 jacocoTestReport {
     executionData(test)
     reports {
@@ -170,7 +160,7 @@ sonarqube {
         property "sonar.pitest.mode", "reuseReport"
         property "sonar.pitest.reportsDirectory", "build/reports/pitest"
         property "sonar.exclusions", "src/main/java/**"
-       }
+    }
 }
 
 /*project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
@@ -196,7 +186,7 @@ dependencyCheck {
     // Specifies if the build should be failed if a CVSS score above a specified level is identified.
     // range of 0-10 fails the build, anything greater and it doesn't fail the build
     failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
-    suppressionFiles = ['config/owasp/suppressions.xml']
+    suppressionFile = 'config/owasp/suppressions.xml'
 }
 
 dependencyUpdates.resolutionStrategy = {

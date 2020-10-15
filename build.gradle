@@ -4,6 +4,7 @@ buildscript {
     }
     dependencies {
         classpath("net.serenity-bdd:serenity-gradle-plugin:2.2.9")
+        classpath 'info.solidsoft.gradle.pitest:gradle-pitest-plugin:1.5.0'
     }
 }
 
@@ -12,18 +13,21 @@ plugins {
     id 'uk.gov.hmcts.java' version '0.12.0'
     id 'pmd'
     id 'jacoco'
-    id 'org.springframework.boot' version '2.3.1.RELEASE'
+    id 'org.springframework.boot' version '2.3.4.RELEASE'
+    id 'info.solidsoft.pitest' version '1.5.0'
     id 'io.spring.dependency-management' version '1.0.9.RELEASE'
     id 'java'
     id 'com.github.ben-manes.versions' version '0.28.0'
     id 'org.sonarqube' version '2.8'
 }
 
+apply plugin: "info.solidsoft.pitest"
 apply plugin: 'java'
 apply plugin: 'net.serenity-bdd.aggregator'
 apply plugin: 'project-report'
 apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
+
 def versions = [
         junit              : '5.5.0',
         lombok             : '1.18.6',
@@ -68,7 +72,6 @@ jacocoTestCoverageVerification {
 }
 
 sourceSets {
-
     integrationTest {
         java {
             compileClasspath += main.output + test.output
@@ -76,15 +79,6 @@ sourceSets {
             srcDir file('src/integrationTest/java')
         }
         resources.srcDir file('src/integrationTest/resources')
-    }
-
-    smokeTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/smokeTest/java')
-        }
-        resources.srcDir file('src/smokeTest/resources')
     }
 }
 
@@ -99,11 +93,6 @@ task integration(type: Test, description: 'Runs the integration tests.', group: 
     finalizedBy aggregate
 }
 
-task smoke(type: Test, description: 'Runs the smoke tests.', group: 'Verification') {
-    testClassesDirs = sourceSets.smokeTest.output.classesDirs
-    classpath = sourceSets.smokeTest.runtimeClasspath
-    finalizedBy aggregate
-}
 
 jacocoTestReport {
     executionData(test)
@@ -125,14 +114,12 @@ sonarqube {
         property "sonar.projectName", "am-judicial-booking-batch-service"
         property "sonar.projectKey", "am-judicial-booking-batch-service"
         property "sonar.coverage.jacoco.xmlReportPaths", "${project.buildDir}/reports/jacoco/test/jacocoTestReport.xml"
-        property "sonar.pitest.mode", "reuseReport"
-        property "sonar.pitest.reportsDirectory", "build/reports/pitest"
-        property "sonar.exclusions", "src/main/java/**"
+        property "sonar.exclusions", "**/**"
     }
 }
-
-/*project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
-project.tasks['sonarqube'].group = "Verification"*/
+//
+//project.tasks['sonarqube'].dependsOn test, integration, jacocoTestReport
+//project.tasks['sonarqube'].group = "Verification"
 
 dependencyUpdates.resolutionStrategy {
     componentSelection { rules ->
@@ -151,9 +138,6 @@ dependencyUpdates.resolutionStrategy {
 
 //https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/configuration.html
 dependencyCheck {
-    // Specifies if the build should be failed if a CVSS score above a specified level is identified.
-    // range of 0-10 fails the build, anything greater and it doesn't fail the build
-    failBuildOnCVSS = System.getProperty('dependencyCheck.failBuild') == 'true' ? 0 : 11
     suppressionFile = 'config/owasp/suppressions.xml'
 }
 
@@ -231,7 +215,6 @@ dependencies {
     compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
     //compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
 
-    compile group: 'org.liquibase', name: 'liquibase-core', version: '3.10.2'
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
@@ -267,7 +250,6 @@ dependencies {
     integrationTestCompile sourceSets.test.runtimeClasspath
 
 }
-
 
 
 test {

@@ -24,17 +24,19 @@ apply plugin: 'net.serenity-bdd.aggregator'
 apply plugin: 'project-report'
 apply plugin: 'idea'
 apply plugin: 'io.spring.dependency-management'
-
 def versions = [
-        junit          : '5.5.0',
-        lombok         : '1.18.6',
-        reformLogging  : '5.1.1',
-        reformS2sClient: '3.0.0',
-        serenity       : '2.1.0',
-        springBoot     : '2.1.4.RELEASE',
-        springHystrix  : '2.1.1.RELEASE',
-        rest_assured   : '3.3.0',
-        feign_jackson  : '9.7.0'
+        junit              : '5.5.0',
+        lombok             : '1.18.6',
+        gradlePitest       : '1.3.0',
+        pitest             : '1.4.2',
+        reformLogging      : '5.1.1',
+        reformS2sClient    : '3.0.0',
+        serenity           : '2.1.0',
+        springBoot         : '2.3.4.RELEASE',
+        sonarPitest        : '0.5',
+        springHystrix      : '2.1.1.RELEASE',
+        rest_assured       : '3.3.0',
+        feign_jackson      : '9.7.0'
 ]
 
 mainClassName = 'uk.gov.hmcts.reform.judicialbookingbatch.JudicialBookingBatchApplication'
@@ -65,20 +67,7 @@ jacocoTestCoverageVerification {
     }
 }
 
-configurations {
-    functionalTestCompile.extendsFrom testCompile
-    functionalTestRuntime.extendsFrom testRuntime
-}
-
 sourceSets {
-    functionalTest {
-        java {
-            compileClasspath += main.output + test.output
-            runtimeClasspath += main.output + test.output
-            srcDir file('src/functionalTest/java')
-        }
-        resources.srcDir file('src/functionalTest/resources')
-    }
 
     integrationTest {
         java {
@@ -101,26 +90,6 @@ sourceSets {
 
 tasks.withType(JavaCompile) {
     options.compilerArgs << "-Xlint:unchecked" << "-Werror"
-}
-
-/*task functional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
-    testClassesDirs = sourceSets.functionalTest.output.classesDirs
-    classpath = sourceSets.functionalTest.runtimeClasspath
-    doFirst {
-        generateCucumberReports.enabled = true
-        javaexec {
-            main = "uk.gov.hmcts.reform.judicialbookingbatch.befta.fda"
-            classpath += configurations.cucumberRuntime + sourceSets.functionalTest.runtimeClasspath + sourceSets.main.output + sourceSets.test.output
-            args = ['--plugin', "json:${projectDir}/target/cucumber.json", '--tags', 'not @Ignore', '--glue',
-                    'uk.gov.hmcts.befta.player', 'src/functionalTest/resources/features/']
-        }
-    }
-}*/
-
-task functional(type: Test, description: 'Runs the functional tests.', group: 'Verification') {
-    testClassesDirs = sourceSets.functionalTest.output.classesDirs
-    classpath = sourceSets.functionalTest.runtimeClasspath
-    finalizedBy aggregate
 }
 
 task integration(type: Test, description: 'Runs the integration tests.', group: 'Verification') {
@@ -213,37 +182,56 @@ repositories {
 
 
 dependencies {
-    implementation('org.springframework.boot:spring-boot-starter-batch') {
+    compile (group: 'org.springframework.boot', name: 'spring-boot-starter-batch', version: '2.3.4.RELEASE') {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
+        exclude group: "org.springframework", module: "spring-aop"
+        exclude group: "org.springframework", module: "spring-beans"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+        exclude group: "org.springframework", module: "spring-jdbc"
+        exclude group: "org.springframework", module: "spring-test"
+        exclude group: "org.springframework", module: "spring-tx"
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
     }
+
+    compile(group: 'org.springframework', name: 'spring-jdbc', version: '5.2.9.RELEASE')
+    compile(group: 'org.springframework', name: 'spring-beans', version: '5.2.9.RELEASE')
+    compile(group: 'org.springframework', name: 'spring-context', version: '5.2.9.RELEASE')
+    compile(group: 'org.springframework', name: 'spring-core', version: '5.2.9.RELEASE')
+    compile(group: 'org.springframework', name: 'spring-test', version: '5.2.9.RELEASE')
+    compile(group: 'org.springframework', name: 'spring-tx', version: '5.2.9.RELEASE')
+
     compile(group: 'uk.gov.hmcts.reform', name: 'properties-volume-spring-boot-starter', version: '0.1.0') {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
     }
-    compile(group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.3.RELEASE') {
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
-        exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
-    }
+    compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-netflix-hystrix', version: '2.2.3.RELEASE'
     compile('org.springframework.boot:spring-boot-starter-hateoas') {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-websocket"
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
+        exclude group: "org.springframework", module: "spring-aop"
+        exclude group: "org.springframework", module: "spring-beans"
+        exclude group: "org.springframework", module: "spring-context"
+        exclude group: "org.springframework", module: "spring-core"
+        exclude group: "org.springframework", module: "spring-jdbc"
+        exclude group: "org.springframework", module: "spring-test"
+        exclude group: "org.springframework", module: "spring-tx"
+        exclude group: "org.springframework", module: "spring-web"
+        exclude group: "org.springframework", module: "spring-webmvc"
     }
-    compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-websocket', version: '9.0.37'
-    compile group: 'org.apache.tomcat.embed', name: 'tomcat-embed-core', version: '9.0.37'
-
 
     compile group: 'org.springframework.cloud', name: 'spring-cloud-starter-openfeign', version: '2.2.3.RELEASE'
     compile(group: 'uk.gov.hmcts.reform.auth', name: 'auth-checker-lib', version: '2.1.4') {
         // TODO remove when auth-checker-lib upgrades its dependency to spring boot 2.0.x
         exclude group: 'uk.gov.hmcts.reform', module: 'java-logging-spring'
-
     }
     compile group: 'javax.inject', name: 'javax.inject', version: '1'
     compile group: 'org.postgresql', name: 'postgresql', version: '42.2.14'
     compile group: 'uk.gov.hmcts.reform', name: 'logging', version: versions.reformLogging
-    compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
+    //compile group: 'uk.gov.hmcts.reform', name: 'logging-appinsights', version: versions.reformLogging
 
+    compile group: 'org.liquibase', name: 'liquibase-core', version: '3.10.2'
     testCompile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.30'
     testImplementation 'org.springframework.batch:spring-batch-test'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
@@ -260,22 +248,26 @@ dependencies {
         exclude group: "org.apache.tomcat.embed", module: "tomcat-embed-core"
     }
 
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: versions.junit
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-params', version: versions.junit
+    testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: versions.junit
+
     testCompile group: 'io.rest-assured', name: 'rest-assured', version: versions.rest_assured
     testCompile group: 'io.github.openfeign', name: 'feign-jackson', version: versions.feign_jackson
-
-    smokeTestCompile group: 'io.rest-assured', name: 'rest-assured', version: versions.rest_assured
-
-    functionalTestCompile sourceSets.main.runtimeClasspath
-    functionalTestCompile sourceSets.test.runtimeClasspath
+    testCompile('com.opentable.components:otj-pg-embedded:0.13.3')
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-    smokeTestCompile sourceSets.main.runtimeClasspath
-    smokeTestCompile sourceSets.test.runtimeClasspath
-    smokeTestCompileOnly group: 'org.projectlombok', name: 'lombok', version: versions.lombok
-    smokeTestAnnotationProcessor group: 'org.projectlombok', name: 'lombok', version: versions.lombok
+    integrationTestCompile group: 'net.serenity-bdd', name: 'serenity-core', version: versions.serenity
+    integrationTestCompile group: 'net.serenity-bdd', name: 'serenity-junit', version: versions.serenity
+    integrationTestCompile group: 'net.serenity-bdd', name: 'serenity-rest-assured', version: versions.serenity
+    integrationTestCompile group: 'net.serenity-bdd', name: 'serenity-spring', version: versions.serenity
+
+    integrationTestCompile sourceSets.main.runtimeClasspath
+    integrationTestCompile sourceSets.test.runtimeClasspath
 
 }
+
 
 
 test {

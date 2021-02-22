@@ -6,3 +6,4 @@ job:
   kind: Job
   global:
     jobKind: Job
+  ttlSecondsAfterFinished: 600

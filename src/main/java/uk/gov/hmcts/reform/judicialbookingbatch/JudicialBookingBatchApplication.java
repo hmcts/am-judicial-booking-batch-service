@@ -16,7 +16,7 @@ public class JudicialBookingBatchApplication {
         //Sleep added to allow app-insights to flush the logs
         Thread.sleep(6000);
         int exitCode = SpringApplication.exit(context);
-        log.info("JudicialBookingBatchApplication Application exiting");
+        log.info("JudicialBookingBatchApplication Application");
         log.info("JudicialBookingBatchApplication Application exiting with exit code " + exitCode);
         System.exit(exitCode);
     }
